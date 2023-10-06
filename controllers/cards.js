@@ -1,24 +1,23 @@
-// const User = require('../models/user');
+const Card = require('../models/card');
 
-// module.exports.getUsers = (req, res) => {
-//   User.find({})
-//     .then((users) => res.send({ data: users }))
-//     .catch((err) => res.status(500).send({ message: `Ошибка ${err.message}` }));
-// };
+module.exports.getCards = (req, res) => {
+  Card.find({})
+    .then((cards) => res.send({ data: cards }))
+    .catch((err) => res.status(500).send(err.message));
+};
 
-// module.exports.getUser = (req, res) => {
-//   User.findById(req.params.id)
-//     .then((user) => res.send({ data: user }))
-//     .catch((err) => res.status(500).send({ message: `Ошибка ${err.message}` }));
-// };
+module.exports.createCard = (req, res) => {
+  const { name, link } = req.body;
+  Card.create({ name, link })
+    .then((card) => {
+      res.send({ data: card });
+      console.log(req.user._id);
+    })
+    .catch((err) => res.status(500).send(err.message));
+};
 
-// module.exports.createUser = (req, res) => {
-//   const { name, about, avatar } = req.body;
-//   User.create({ name, about, avatar })
-//     .then((user) => res.send({ data: user }))
-//     .catch((err) => res.status(500).send({ message: `Ошибка ${err.message}` }));
-// };
-
-// module.exports.createCard = (req, res) => {
-//   console.log(req.user._id); // _id станет доступен
-// };
+module.exports.removeCard = (req, res) => {
+  Card.findByIdAndRemove(req.params.cardId)
+    .then(() => res.send('Карточка успешно удалена'))
+    .catch((err) => res.status(500).send(err.message));
+};
