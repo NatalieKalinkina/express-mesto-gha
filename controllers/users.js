@@ -4,11 +4,13 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   SERVER_ERROR,
+  OK,
+  CREATED,
 } = require('../constants');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.status(200).send({ users }))
+    .then((users) => res.status(OK).send({ users }))
     .catch((err) => {
       console.log(err);
       return res.status(SERVER_ERROR).send({ message: 'Server Error' });
@@ -21,7 +23,7 @@ module.exports.getUser = (req, res) => {
       if (!user) {
         return res.status(NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
       }
-      return res.status(200).send({
+      return res.status(OK).send({
         name: user.name,
         about: user.about,
         avatar: user.avatar,
@@ -40,7 +42,7 @@ module.exports.getUser = (req, res) => {
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then((user) => res.status(201).send({
+    .then((user) => res.status(CREATED).send({
       name: user.name,
       about: user.about,
       avatar: user.avatar,
@@ -62,7 +64,7 @@ module.exports.updateProfile = (req, res) => {
       if (!user) {
         return res.status(NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
       }
-      return res.status(200).send({
+      return res.status(OK).send({
         name: user.name,
         about: user.about,
         avatar: user.avatar,
@@ -85,7 +87,7 @@ module.exports.updateAvatar = (req, res) => {
       if (!user) {
         return res.status(NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
       }
-      return res.status(200).send({
+      return res.status(OK).send({
         name: user.name,
         about: user.about,
         avatar: user.avatar,

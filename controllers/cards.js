@@ -4,12 +4,14 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   SERVER_ERROR,
+  OK,
+  CREATED,
 } = require('../constants');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
     .populate('owner')
-    .then((cards) => res.status(200).send({ cards }))
+    .then((cards) => res.status(OK).send({ cards }))
     .catch((err) => {
       console.log(err);
       return res.status(SERVER_ERROR).send({ message: 'Server Error' });
@@ -21,7 +23,7 @@ module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   Card.create({ name, link })
     .then((card) => {
-      res.status(201).send({
+      res.status(CREATED).send({
         likes: card.likes,
         _id: card._id,
         name: card.name,
@@ -45,7 +47,7 @@ module.exports.removeCard = (req, res) => {
       if (!card) {
         return res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
       }
-      return res.send({ message: 'Карточка успешно удалена' });
+      return res.status(OK).send({ message: 'Карточка успешно удалена' });
     })
     .catch((err) => {
       console.log(err);
@@ -66,7 +68,7 @@ module.exports.likeCard = (req, res) => {
       if (!card) {
         return res.status(NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
       }
-      return res.send({
+      return res.status(OK).send({
         likes: card.likes,
         _id: card._id,
         name: card.name,
@@ -77,7 +79,7 @@ module.exports.likeCard = (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+      if (err.name === 'CastError') {
         return res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки/снятия лайка' });
       }
       return res.status(SERVER_ERROR).send({ message: 'Server Error' });
@@ -94,7 +96,7 @@ module.exports.dislikeCard = (req, res) => {
       if (!card) {
         return res.status(NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
       }
-      return res.send({
+      return res.status(OK).send({
         likes: card.likes,
         _id: card._id,
         name: card.name,
@@ -105,7 +107,7 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+      if (err.name === 'CastError') {
         return res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки/снятия лайка' });
       }
       return res.status(SERVER_ERROR).send({ message: 'Server Error' });
