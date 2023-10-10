@@ -45,10 +45,13 @@ module.exports.removeCard = (req, res) => {
       if (!card) {
         return res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
       }
-      return res.send('Карточка успешно удалена');
+      return res.send({ message: 'Карточка успешно удалена' });
     })
     .catch((err) => {
       console.log(err);
+      if (err.name === 'CastError') {
+        return res.status(BAD_REQUEST).send({ message: 'Передан некорректный формат _id карточки' });
+      }
       return res.status(SERVER_ERROR).send({ message: 'Server Error' });
     });
 };
@@ -74,8 +77,8 @@ module.exports.likeCard = (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки/снятии лайка' });
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
+        return res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки/снятия лайка' });
       }
       return res.status(SERVER_ERROR).send({ message: 'Server Error' });
     });
@@ -102,8 +105,8 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки/снятии лайка' });
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
+        return res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки/снятия лайка' });
       }
       return res.status(SERVER_ERROR).send({ message: 'Server Error' });
     });
