@@ -57,10 +57,10 @@ module.exports.removeCard = (req, res, next) => {
     });
 };
 
-module.exports.likeCard = (req, res, next) => {
+const updateLike = (req, res, next, whatToDoWithLike) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
+    whatToDoWithLike,
     { new: true },
   )
     .orFail(new NotFoundError('Передан несуществующий _id карточки'))
@@ -82,27 +82,62 @@ module.exports.likeCard = (req, res, next) => {
     });
 };
 
-module.exports.dislikeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: req.user._id } },
-    { new: true },
-  )
-    .orFail(new NotFoundError('Передан несуществующий _id карточки'))
-    .then((card) => res.status(OK).send({
-      likes: card.likes,
-      _id: card._id,
-      name: card.name,
-      link: card.link,
-      owner: req.user._id,
-      createdAt: card.createdAt,
-    }))
-    .catch((err) => {
-      console.log(err);
-      if (err instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Переданы некорректные данные для постановки/снятия лайка'));
-      } else {
-        next(err);
-      }
-    });
+module.exports.likeCard = (req, res, next) => {
+  const whatToDoWithLike = { $addToSet: { likes: req.user._id } };
+  return updateLike(req, res, next, whatToDoWithLike);
 };
+
+module.exports.dislikeCard = (req, res, next) => {
+  const whatToDoWithLike = { $pull: { likes: req.user._id } };
+  return updateLike(req, res, next, whatToDoWithLike);
+};
+
+// module.exports.likeCard = (req, res, next) => {
+//   Card.findByIdAndUpdate(
+//     req.params.cardId,
+//     { $addToSet: { likes: req.user._id } },
+//     { new: true },
+//   )
+//     .orFail(new NotFoundError('Передан несуществующий _id карточки'))
+//     .then((card) => res.status(OK).send({
+//       likes: card.likes,
+//       _id: card._id,
+//       name: card.name,
+//       link: card.link,
+//       owner: req.user._id,
+//       createdAt: card.createdAt,
+//     }))
+//     .catch((err) => {
+//       console.log(err);
+//       if (err instanceof mongoose.Error.CastError) {
+//         next(new BadRequestError('Переданы некорректные данные для постановки/снятия лайка'));
+//       } else {
+//         next(err);
+//       }
+//     });
+// };
+
+// module.exports.dislikeCard = (req, res, next) => {
+//   Card.findByIdAndUpdate(
+//     req.params.cardId,
+//     { $pull: { likes: req.user._id } },
+//     { new: true },
+//   )
+//     .orFail(new NotFoundError('Передан несуществующий _id карточки'))
+//     .then((card) => res.status(OK).send({
+//       likes: card.likes,
+//       _id: card._id,
+//       name: card.name,
+//       link: card.link,
+//       owner: req.user._id,
+//       createdAt: card.createdAt,
+//     }))
+//     .catch((err) => {
+//       console.log(err);
+//       if (err instanceof mongoose.Error.CastError) {
+//         next(new BadRequestError('Переданы некорректные данные для постановки/снятия лайка'));
+//       } else {
+//         next(err);
+//       }
+//     });
+// };
