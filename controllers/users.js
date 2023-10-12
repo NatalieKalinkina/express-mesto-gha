@@ -58,9 +58,14 @@ module.exports.createUser = (req, res, next) => {
     });
 };
 
-module.exports.updateProfile = (req, res, next) => {
-  const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+// Даниил, привет! Спасибо за мотивацию и рекомендации)
+// Не уверена, что правильно реализовала идею с декораторами -
+// насколько я поняла, декоратор всегда должен принимать на вход функцию, которую декорирует,
+// но не придумала, как это реализовать в данном случае.
+// Если то, что я сделала, все-таки не декораторы, прошу дать еще подсказку.
+
+const updateUserProfile = (req, res, next, newProfileData) => {
+  User.findByIdAndUpdate(req.user._id, newProfileData, { new: true, runValidators: true })
     .orFail(new NotFoundError('Пользователь по указанному _id не найден'))
     .then((user) => res.status(OK).send({
       name: user.name,
@@ -70,7 +75,8 @@ module.exports.updateProfile = (req, res, next) => {
     }))
     .catch((err) => {
       console.log(err);
-      if (err instanceof mongoose.Error.ValidationError) {
+      if (err instanceof mongoose.Error.ValidationError
+        || err instanceof mongoose.Error.CastError) {
         next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
       } else {
         next(err);
@@ -78,22 +84,12 @@ module.exports.updateProfile = (req, res, next) => {
     });
 };
 
-module.exports.updateAvatar = (req, res, next) => {
+module.exports.updateUserInfo = (req, res, next) => {
+  const { name, about } = req.body;
+  return updateUserProfile(req, res, next, { name, about });
+};
+
+module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .orFail(new NotFoundError('Пользователь по указанному _id не найден'))
-    .then((user) => res.status(OK).send({
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
-      _id: user._id,
-    }))
-    .catch((err) => {
-      console.log(err);
-      if (err instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Переданы некорректные данные при обновлении аватара'));
-      } else {
-        next(err);
-      }
-    });
+  return updateUserProfile(req, res, next, { avatar });
 };
