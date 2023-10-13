@@ -14,7 +14,7 @@ module.exports.getUsers = (req, res, next) => {
     .then((users) => res.status(OK).send({ users }))
     .catch((err) => {
       console.log(err);
-      next();
+      next(err);
     });
 };
 
@@ -58,12 +58,6 @@ module.exports.createUser = (req, res, next) => {
     });
 };
 
-// Даниил, привет! Спасибо за мотивацию и рекомендации)
-// Не уверена, что правильно реализовала идею с декораторами -
-// насколько я поняла, декоратор всегда должен принимать на вход функцию, которую декорирует,
-// но не придумала, как это реализовать в данном случае.
-// Если то, что я сделала, все-таки не декораторы, прошу дать еще подсказку.
-
 const updateUserProfile = (req, res, next, newProfileData) => {
   User.findByIdAndUpdate(req.user._id, newProfileData, { new: true, runValidators: true })
     .orFail(new NotFoundError('Пользователь по указанному _id не найден'))
@@ -75,8 +69,7 @@ const updateUserProfile = (req, res, next, newProfileData) => {
     }))
     .catch((err) => {
       console.log(err);
-      if (err instanceof mongoose.Error.ValidationError
-        || err instanceof mongoose.Error.CastError) {
+      if (err instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
       } else {
         next(err);
