@@ -11,7 +11,7 @@ const BadRequestError = require('../errors/BadRequestError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .populate('owner')
+    .populate(['owner', 'likes'])
     .then((cards) => res.status(OK).send({ cards }))
     .catch((err) => {
       console.log(err);
@@ -22,7 +22,7 @@ module.exports.getCards = (req, res, next) => {
 module.exports.createCard = (req, res, next) => {
   const ownerId = req.user._id;
   const { name, link } = req.body;
-  Card.create({ name, link })
+  Card.create({ name, link, owner: ownerId })
     .then((card) => {
       res.status(CREATED).send({
         likes: card.likes,
@@ -44,9 +44,20 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.removeCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  const currentUser = req.user._id;
+  const cardID = req.params.cardId;
+  Card.findById(cardID)
     .orFail(new NotFoundError('Карточка с указанным _id не найдена'))
-    .then(() => res.status(OK).send({ message: 'Карточка успешно удалена' }))
+    .populate(['owner', 'likes'])
+    .then((card) => {
+      const cardOwner = card.owner._id;
+      if (JSON.stringify(cardOwner) !== JSON.stringify(currentUser)) {
+        res.status(403).send({ message: 'Нельзя удалить чужую карточку' });
+      } else {
+        Card.findOneAndRemove(cardID)
+          .then(() => res.status(OK).send({ message: 'Карточка успешно удалена' }));
+      }
+    })
     .catch((err) => {
       console.log(err);
       if (err instanceof mongoose.Error.CastError) {
