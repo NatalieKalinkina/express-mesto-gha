@@ -12,7 +12,8 @@ const appRouter = require('./routes');
 
 app.use(express.static(path.join(__dirname, 'public')));
 const { createUser, login } = require('./controllers/users');
-const { URL_REGEXP } = require('./constants');
+const { URL_REGEXP, SERVER_ERROR } = require('./constants');
+const NotFoundError = require('./errors/NotFoundError');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -42,5 +43,18 @@ app.use(auth);
 app.use(appRouter);
 
 app.use(errors());
+
+app.use(() => {
+  throw new NotFoundError('Такой страницы не существует');
+});
+
+app.use((err, req, res, next) => {
+  if (err.statusCode === SERVER_ERROR) {
+    res.status(SERVER_ERROR).send({ message: 'Server error' });
+  } else {
+    res.status(err.statusCode).send({ message: err.message });
+  }
+  next();
+});
 
 app.listen(PORT);
