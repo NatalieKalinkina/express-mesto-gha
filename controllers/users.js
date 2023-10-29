@@ -53,6 +53,7 @@ module.exports.getCurrentUser = (req, res, next) => {
       about: user.about,
       avatar: user.avatar,
       _id: user._id,
+      email: user.email,
     }))
     .catch((err) => {
       console.log(err);
