@@ -56,15 +56,15 @@ module.exports.removeCard = (req, res, next) => {
         throw new ForbiddenError('Нельзя удалить чужую карточку');
       } else {
         Card.findOneAndRemove(cardID)
-          .then(() => res.status(OK).send({ message: 'Карточка успешно удалена' }));
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      if (err instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Передан некорректный формат _id карточки'));
-      } else {
-        next(err);
+          .then(() => res.status(OK).send({ message: 'Карточка успешно удалена' }))
+          .catch((err) => {
+            console.log(err);
+            if (err instanceof mongoose.Error.CastError) {
+              next(new BadRequestError('Передан некорректный формат _id карточки'));
+            } else {
+              next(err);
+            }
+          });
       }
     });
 };

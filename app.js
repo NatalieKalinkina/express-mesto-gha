@@ -1,5 +1,4 @@
 require('dotenv').config();
-const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const { celebrate, Joi, errors } = require('celebrate');
@@ -11,7 +10,6 @@ const app = express();
 const auth = require('./middlewares/auth');
 const appRouter = require('./routes');
 
-app.use(express.static(path.join(__dirname, 'public')));
 const { createUser, login } = require('./controllers/users');
 const { URL_REGEXP, SERVER_ERROR } = require('./constants');
 const NotFoundError = require('./errors/NotFoundError');
