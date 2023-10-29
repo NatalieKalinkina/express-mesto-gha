@@ -66,6 +66,14 @@ module.exports.removeCard = (req, res, next) => {
             }
           });
       }
+    })
+    .catch((err) => {
+      console.log(err);
+      if (err instanceof mongoose.Error.CastError) {
+        next(new BadRequestError('Передан некорректный формат _id карточки'));
+      } else {
+        next(err);
+      }
     });
 };
 
