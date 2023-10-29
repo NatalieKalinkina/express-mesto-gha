@@ -14,6 +14,8 @@ const saltRounds = 10;
 
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
+const ConflictError = require('../errors/ConflictError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -89,7 +91,7 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       console.log(err);
       if (err.code === 11000) {
-        res.status(409).send({ message: 'Пользователь с таким email уже зарегистрирован' });
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
       }
       if (err instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
@@ -104,16 +106,18 @@ module.exports.login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        res.status(401).send({ message: 'Неправильные почта или пароль' });
+        next(new UnauthorizedError('Неправильные почта или пароль'));
+      } else {
+        bcrypt.compare(password, user.password)
+          .then((matched) => {
+            if (!matched) {
+              next(new UnauthorizedError('Неправильные почта или пароль'));
+            } else {
+              const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+              res.status(OK).send({ token });
+            }
+          });
       }
-      bcrypt.compare(password, user.password)
-        .then((matched) => {
-          if (!matched) {
-            res.status(401).send({ message: 'Неправильные почта или пароль' });
-          }
-          const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-          res.status(OK).send({ token });
-        });
     })
     .catch((err) => {
       console.log(err);
