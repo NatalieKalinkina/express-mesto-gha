@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
+const { JWT_SECRET = 'secret-key' } = process.env;
+
 const {
   OK,
   CREATED,
@@ -109,7 +111,7 @@ module.exports.login = (req, res, next) => {
           if (!matched) {
             res.status(401).send({ message: 'Неправильные почта или пароль' });
           }
-          const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+          const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
           res.status(OK).send({ token });
         });
     })
